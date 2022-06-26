@@ -23,17 +23,14 @@ app.use((req, res, next) => {
 app.use((req,res,next)=>{
     req.requestTime = new Date().toISOString();
     next();
-})
+});
 
 // 4) ROUTES
 app.use('/api/v1/tours', tourRouter);
-app.use('/api/v1/users', userRouter)
+app.use('/api/v1/users', userRouter);
 
-// 4) START SERVER
+module.exports = app;
 
-const port = 3000;
-app.listen(port, ()=>{
-    console.log(`App running on port ${port}...`);
-});
+
 
 

@@ -3,7 +3,14 @@ const express = require('express');
 
 
 const app = express();
-app.use(express.json()); //middleware
+ //middleware
+app.use(express.json());
+
+//middleware creation
+app.use((req, res, next) => {
+    console.log('Hello from the middleware 🙋‍♀️');
+    next();
+});
 
 const tours = JSON.parse(
     fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`)
@@ -15,27 +22,21 @@ const getAllTours = (req,res)=>{
         status: 'success',
         results: tours.length,
         data: {
-            tours: tours
+            tours
         }
     });
 };
 
 const getTour = (req,res)=>{
     console.log(req.params);
-
     const id = req.params.id*1;
     const tour = tours.find(el=>el.id === id);
-
-
-    //if(id > tours.length) {
     if(!tour) {
         return res.status(404).json({
             status: 'fail',
             message: 'Invalid ID'
         });
     };
-
-
     res.status(200).json({
         status: 'success',
         data: {
@@ -96,13 +97,13 @@ const deleteTour = (req,res)=>{
 //app.patch('/api/v1/tours/:id', updateTour);
 //app.delete('/api/v1/tours/:id', deleteTour);
 
-app
+    app
     .route('/api/v1/tours')
     .get(getAllTours)
     .post(createTour);
 
-app 
-    .route('/api/v1/tours')
+    app
+    .route('/api/v1/tours/:id')
     .get(getTour)
     .patch(updateTour)
     .delete(deleteTour);

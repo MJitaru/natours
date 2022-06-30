@@ -14,7 +14,7 @@ exports.getAllTours = async (req,res)=>{
     // 1A) Filtering 
         // eslint-disable-next-line node/no-unsupported-features/es-syntax
         const queryObj = {...req.query};
-        const excludedFields = ['page', 'sort', 'limit','fields'];
+        const excludedFields = ['page','sort','limit','fields'];
         excludedFields.forEach(el=>delete queryObj[el]);
     
     // 1B) Advanced filtering
@@ -29,7 +29,16 @@ exports.getAllTours = async (req,res)=>{
         query = query.sort(sortBy);
         //sort('price ratingsAverage')
     } else {
-        query = query.sort('-createdAt') // sort in a descending order based on the time they were created, so that the newest ones appear first.
+        query = query.sort('-createdAt') // sort in a descending order based on the time they were, so that the newest ones appear first.
+    };
+
+    // 3) FIELD limiting
+
+    if(req.query.fields) {
+        const fields = req.query.fields.split(',').join(' ');
+        query = query.select(fields);
+    } else {
+        query = query.select('-__v')
     }
        
     //EXECUTE QUERY

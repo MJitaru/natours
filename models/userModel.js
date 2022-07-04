@@ -20,7 +20,8 @@ const userSchema = new mongoose.Schema ({
     password: {
         type:String,
         required: [true, 'Please provide a password'],
-        minlength: 8
+        minlength: 8,
+        select: false
 
     },
     passwordConfirm: {
@@ -48,7 +49,12 @@ userSchema.pre('save', async function (next){
     this.passwordConfirm = undefined;
     next();
 
-})
+});
+//candidatePassword = password that user passes in the body
+//.correctPassword is an Instance method => Method that is going to be available on all documents of a certain collection.
+userSchema.methods.correctPassword = async function (candidatePassword, userPassword) {
+    return await bcrypt.compare(candidatePassword, userPassword) // compare will return true if the left two passwords are the same.
+};
 
 
 const User = mongoose.model('User', userSchema);

@@ -1,3 +1,4 @@
+//Global handling middleware (Picks up every error found and sends back to the client when necessary )
 class AppError extends Error {
     constructor(message, statusCode){
         super(message);

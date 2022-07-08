@@ -16,6 +16,16 @@ const signToken = id => {
 
 const createSendToken = (user, statusCode, res) => {
     const token = signToken(user._id);
+    const cookieOptions = {
+        expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRES_IN *24 *60*60*1000),
+        httpOnly: true // the cookie can't be accessed or modified in any way by the browser
+    }
+    if(process.env.NODE_ENV === 'production') cookieOptions.secure = true; //the cookie will be sent only when using an encrypted connection => https
+
+    res.cookie('jwt', token, cookieOptions)
+
+    //Remove the password from the output
+    user.password = undefined;
 
     res.status(statusCode).json({
         status: 'success',
@@ -66,9 +76,9 @@ exports.protect = catchAsync(async(req,res,next)=>{
     let token;
     if(req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
         token = req.headers.authorization.split(' ')[1];
-    } else if (req.cookies.jwt && req.cookies.jwt !== 'loggedout') {
+    } /*else if (req.cookies.jwt && req.cookies.jwt !== 'loggedout') {
         token = req.cookies.jwt;
-    }
+    }*/
 
     if(!token) {
         return next(
@@ -175,7 +185,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     createSendToken(user, 200, res);
 });
 
-exports.updatePasswords = catchAsync (async (req,res,next)=>{
+exports.updatePassword = catchAsync (async (req,res,next)=>{
     // 1) Get user from the collection
     const user = await User.findById(req.user.id).select('+password');
 

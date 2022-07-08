@@ -14,7 +14,10 @@ const router = express.Router(); // It is a real middleware which must be used f
     router.patch(
         '/updateMyPassword',
          authController.protect,
-          authController.updatePasswords)
+          authController.updatePassword);
+
+    router.patch('/updateMe', authController.protect, userController.updateMe);
+    router.delete('/deleteMe', authController.protect, userController.deleteMe);
 
 
     router

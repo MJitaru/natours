@@ -34,10 +34,9 @@ exports.updateMe = catchAsync(async (req,res,next) => {
         return next(new AppError('This route is not for password updates. Please use /updateMyPassword.', 400));
     }
 
-    // 2) Filtered out unwanted field names that are not allowed to be updated.
-    const filteredBody = filterObj(req.body, 'name', 'email') //we want to keep only name and email and filter all the rest
 
-    // 3) Update user document
+    // 2) Update user document
+    const filteredBody = filterObj(req.body, 'name', 'email') //we want to keep only name and email and filter all the rest
     const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {
         new:true,
         runValidators: true
@@ -50,6 +49,15 @@ exports.updateMe = catchAsync(async (req,res,next) => {
         }
     });
 });
+
+exports.deleteMe = catchAsync(async(req,res,next)=>{
+    await User.findByIdAndUpdate(req.user.id, {active:false})
+
+    res.status(204).json({
+        status: 'success',
+        data: null
+    })
+})
 
 exports.getUser = (req, res)=>{
     res.status(500).json({

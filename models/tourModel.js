@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const slugify = require('slugify');
-const validator = require('validator');
+//const validator = require('validator');
 
 //Adding implementation schema with mongoose
 const tourSchema = new mongoose.Schema({
@@ -58,7 +58,6 @@ const tourSchema = new mongoose.Schema({
 
       }
       
-      
     },
     summary: {
       type: String,
@@ -83,8 +82,33 @@ const tourSchema = new mongoose.Schema({
     secretTour: {
       type: Boolean,
       default: false
-    }
-  }, {
+    },
+    startLocation: {
+      //GeoJSON - for geospatial data (for this obj to be recognized as geospatial data we need the type and the coordinates)
+      type: {
+        type: String,
+        default: 'Point',
+        enum: ['Point']
+      },
+      coordinates: [Number], // this array is the coordinates of the point, with only longitude first and second latitude
+      adress: String,
+      description: String
+    },
+    locations: [
+      {
+        type: {
+          type: String,
+          default: 'Point',
+          enum: ['Point']
+        },
+        coordinates: [Number],
+        adress: String,
+        description: String,
+        day: Number
+      }
+    ]
+  }, 
+  {
     toJSON: { virtuals: true},
     toObject: { virtuals: true}
   });
@@ -104,7 +128,6 @@ const tourSchema = new mongoose.Schema({
     console.log('Will save document...');
     next();
   })
-
   tourSchema.post('save', function(doc, next){
     console.log(doc);
     next();
@@ -133,4 +156,4 @@ const tourSchema = new mongoose.Schema({
 
   const Tour = mongoose.model('Tour', tourSchema);
   
-  module.exports = Tour;
+  module.exports = Tour; 

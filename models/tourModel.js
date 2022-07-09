@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const slugify = require('slugify');
+//const User = require('./userModel');
 //const validator = require('validator');
 
 //Adding implementation schema with mongoose
@@ -106,6 +107,11 @@ const tourSchema = new mongoose.Schema({
         description: String,
         day: Number
       }
+    ],
+    guides: [
+     {type: mongoose.Schema.ObjectId,  // We expect that the type of each elements in the guides array to be a MongoDB id.
+      ref: 'User'
+    }
     ]
   }, 
   {
@@ -123,6 +129,14 @@ const tourSchema = new mongoose.Schema({
     next();
   });
   
+  //The below code is working only for creating documents, and he is responsible for embedding
+ /* tourSchema.pre('save', async function(next){
+    const guidesPromises = this.guides.map(async id=> await User.findById(id))
+    this.guides = await Promise.all(guidesPromises);
+    next();
+  });*/
+
+
 
  /* tourSchema.pre('save', function(next){
     console.log('Will save document...');
@@ -141,11 +155,21 @@ const tourSchema = new mongoose.Schema({
     this.start = Date.now();
     next();
   });
+  
+  tourSchema.pre(/^find/, function(next){
+    this.populate({ //populate tours with specific id's and remove from DB -__v and when pass has been created.
+      path : 'guides',
+     select: '-__v -passwordChangedAt' 
+   });
+
+    next();
+  })
 
   tourSchema.post(/^find/, function(docs, next) {
     console.log(`Query took ${Date.now()-this.start} milliseconds`);
     next();
   })
+
 
   // AGGREGATION MIDDLEWARE
   tourSchema.pre('aggregate', function (next){

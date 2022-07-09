@@ -1,7 +1,8 @@
 const Tour = require ('../models/tourModel');
 const APIFeatures = require('../utils/apiFeatures');
 const catchAsync = require ('../utils/catchAsync');
-const AppError = require('../utils/appError')
+const AppError = require('../utils/appError');
+const factory = require('./handlerFactory');
 
 //Middleware
 exports.aliasTopTours = (req, res, next) => {
@@ -34,7 +35,7 @@ exports.getAllTours = catchAsync(async (req,res,next)=>{
 });
 
 exports.getTour = catchAsync(async (req,res,next) => {
-        const tour = await Tour.findById(req.params.id);
+        const tour = await Tour.findById(req.params.id).populate('reviews');
         // Tour.findOne({ _id: req.params.id })
 
         if (!tour) {
@@ -85,7 +86,9 @@ exports.updateTour = catchAsync(async (req,res,next) => {
     
 });
 
-exports.deleteTour = catchAsync(async (req,res,next) => {
+exports.deleteTour = factory.deleteOne(Tour);
+
+/*exports.deleteTour = catchAsync(async (req,res,next) => {
     
         const tour = await Tour.findByIdAndDelete(req.params.id);
 
@@ -98,7 +101,7 @@ exports.deleteTour = catchAsync(async (req,res,next) => {
           data: null
     });
       
-});
+});*/
 
 //Function that calculates couple of statistics about our tours:
 

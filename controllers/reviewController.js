@@ -1,10 +1,13 @@
 const Review = require ('../models/reviewModel');
 const catchAsync = require ('../utils/catchAsync');
-const AppError = require ('../utils/appError');
+const factory = require('./handlerFactory');
 
 //Controller for getting all reviews from the users
 exports.getAllReviews = catchAsync(async (req,res,next) => {
-    const reviews = await Review.find();
+    let filter = {};
+    if(req.params.tourId) filter = {tour: req.params.tourId};
+
+    const reviews = await Review.find(filter);
 
     res.status(200).json({
         status: 'success',
@@ -15,14 +18,14 @@ exports.getAllReviews = catchAsync(async (req,res,next) => {
     });
 });
 
-//Controller for creating a review
-exports.createReview = catchAsync(async(req,res,next)=>{
-    const newReview = await Review.create(req.body)  //If there are any fields in the body that are not in the schema, they will simply be ignored.
+exports.setTourUserIds = (req,res,next)=>{
+     //Allow nested routes
+     if(!req.body.tour) req.body.tour = req.params.tourId; //We take the tour from the params;
+     if(!req.body.user) req.body.user = req.user.id; // We take the user from the protected route;
+     next();
+};
 
-    res.status(201).json({
-        status: 'success',
-        data:{
-            review: newReview
-        }
-    });
-});
+//Controller for creating a review
+exports.createReview = factory.createOne(Review);
+exports.updateReview = factory.updateOne(Review);
+exports.deleteReview = factory.deleteOne(Review);

@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const reviewSchema = new mongoose.Schema({
     review: {
         type: String,
-        required: ['Review can not be empty']
+        required: [true, 'Review can not be empty']
     },
     rating:{
         type: Number,
@@ -30,6 +30,24 @@ const reviewSchema = new mongoose.Schema({
 {
     toJSON: { virtuals: true}, // When we have a field that is not stored in DB (a virtual property), but calculated using some other value, we want to also show up when it's an output.
     toObject: { virtuals: true}
+});
+
+// /^find/ = regular expression to match strings which starts with find (find, findOne, findById etc...)
+reviewSchema.pre(/^find/, function(next){
+    /*this.populate({  // the tour from the schema will be the one populated, based on the Tour model
+      path : 'tour', 
+     select: 'name' 
+   }).populate({     
+    path: 'user',
+    select:'name photo'
+   });*/
+
+   this.populate({ // the user from the schema will be the one populated, based on the User model
+    path:'user',
+    select: 'name photo'
+   })
+ 
+   next();
 });
 
 const Review = mongoose.model('Review', reviewSchema);

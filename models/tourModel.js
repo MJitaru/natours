@@ -112,7 +112,7 @@ const tourSchema = new mongoose.Schema({
      {type: mongoose.Schema.ObjectId,  // We expect that the type of each elements in the guides array to be a MongoDB id.
       ref: 'User'
     }
-    ]
+    ]    
   }, 
   {
     toJSON: { virtuals: true},
@@ -122,6 +122,13 @@ const tourSchema = new mongoose.Schema({
   tourSchema.virtual('durationWeeks').get(function() {
     return this.duration / 7;
   });
+
+  //Virtual populate (In virtual populate I need to specify 2 fields: Foreign field and  Local field)
+  tourSchema.virtual('reviews', {
+    ref: 'Review',
+    foreignField:'tour',
+    localField: '_id'
+  })
 
   // DOCUMENT MIDDLEWARE: runs before .save() and .create()
   tourSchema.pre('save', function(next) {

@@ -22,25 +22,35 @@ router.use('/:tourId/reviews', reviewRouter); //Mounting a router : On the route
 
     router
         .route('/top-5-cheap')
-        .get(tourController.aliasTopTours, tourController.getAllTours);
+        .get(tourController.aliasTopTours, tourController.getAllTours); //Getting top 5 tours is free for everyone ( no authentication needed)
 
     router
         .route('/tour-stats')
-        .get(tourController.getTourStats);
+        .get(tourController.getTourStats); //Getting statistics for tours is free for everyone ( no authentication needed)
 
     router
-        .route('/monthly-plan/:year')
-        .get(tourController.getMonthlyPlan);
+        .route('/monthly-plan/:year')  //Users must login to see content. Getting monthly plan is restricted to everyone except normal users.
+        .get(
+            authController.protect,  
+            authController.restrictTo('admin', 'lead-guide', 'guide'),
+            tourController.getMonthlyPlan); 
 
     router
         .route('/')
-        .get(authController.protect, tourController.getAllTours)
-        .post(tourController.createTour);
+        .get(tourController.getAllTours) //To get data for all tours, Users must login to see content.
+        .post(
+            authController.protect,
+            authController.restrictTo('admin', 'lead-guide'), //Guides and normal users can't post data about the tours.
+            tourController.createTour);
 
     router
         .route('/:id')
         .get(tourController.getTour)
-        .patch(tourController.updateTour)
+        .patch(
+            authController.protect,
+            authController.restrictTo('admin', 'lead-guide'), //Guides and normal users can't update data about the tours.
+            tourController.updateTour)
+
         .delete(
             authController.protect,
             authController.restrictTo('admin', 'lead-guide'), //action => delete id is restricted only to admin and lead-guide users.

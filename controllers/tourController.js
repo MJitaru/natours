@@ -126,3 +126,44 @@ exports.getToursWithin = catchAsync(async (req,res,next) => {
   })
 });
 
+
+exports.getDistances = catchAsync(async (req,res,next) => {
+  const { latlng, unit } = req.params;
+  const[lat,lng] = latlng.split(',');   
+
+  const multiplier = unit === 'mi' ? 0.000621371 : 0.001; // 1 meter = 0.000621371 miles       
+
+  if(!lat || !lng) {
+    next(new AppError('Please provide latitude and longitude in the format lat,lng.',  400));
+  };
+
+  //$geoNear: This is the only geospatial aggregation pipeline stage that exists. This stage must be always the first one in the pipeline.
+  //near: The point from which to calculate the distances(all distanced will be calculated btw near point and all the start locations)
+
+  const distances = await Tour.aggregate([
+    {
+      $geoNear: {
+        near: {
+          type: 'Point',
+          coordinates: [lng * 1, lat * 1]
+        },
+        distanceField: 'distance',
+        distanceMultiplier: multiplier  //this multiplies the distances with 0.001 to transform from m into km.
+      }
+    },
+    {
+      $project: {
+        distance: 1,  //in $project => 1 means I want to keep the specified values from the output (in this case tour distance and name)
+        name: 1
+      }
+    }
+  ]);
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      data: distances
+    }
+  });
+});
+

@@ -35,6 +35,13 @@ router.use('/:tourId/reviews', reviewRouter); //Mounting a router : On the route
             authController.restrictTo('admin', 'lead-guide', 'guide'),
             tourController.getMonthlyPlan); 
 
+    //In the below variable we want to pass in the coordinates of the place where I am located. unit/:unit is the distance in km or miles(user preference)         
+    router.route('/tours-within/:distance/center/:latlng/unit/:unit').get(tourController.getToursWithin);
+    //  /tours-distance?distance=233&center=-40,45&unit=km       
+    //  /tours-distance/233/center/-40,45/unit/mi -> Standard of specifying URLs
+
+    router.route('/distances/:latlng/unit/:unit').get(tourController.getDistances);
+
     router
         .route('/')
         .get(tourController.getAllTours) //To get data for all tours, Users must login to see content.

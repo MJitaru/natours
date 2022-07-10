@@ -33,6 +33,9 @@ const reviewSchema = new mongoose.Schema({
     toObject: { virtuals: true}
 });
 
+reviewSchema.index({ tour: 1, user: 1}, { unique: true}); //Each combination of tour and user must always be unique
+
+
 // /^find/ = regular expression to match strings which starts with find (find, findOne, findById etc...)
 reviewSchema.pre(/^find/, function(next){
     /*this.populate({  // the tour from the schema will be the one populated, based on the Tour model

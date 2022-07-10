@@ -1,5 +1,6 @@
 // review / rating / createdAt / reference to tour / ref to user.
 const mongoose = require('mongoose');
+const Tour = require('./tourModel');
 
 const reviewSchema = new mongoose.Schema({
     review: {
@@ -37,19 +38,49 @@ reviewSchema.pre(/^find/, function(next){
     /*this.populate({  // the tour from the schema will be the one populated, based on the Tour model
       path : 'tour', 
      select: 'name' 
-   }).populate({     
+   }).populate({     // the user from the schema will be the one populated, based on the User model
     path: 'user',
     select:'name photo'
    });*/
-
-   this.populate({ // the user from the schema will be the one populated, based on the User model
+   
+   this.populate({
     path:'user',
     select: 'name photo'
    })
  
    next();
 });
+//The below function is creating the statistics of the average nr of ratings for the tourId for which the current review was created.
+reviewSchema.statics.calcAverageRatings = async function(tourId) {
+    const stats = await this.aggregate([
+        //First stage => match (importing tour Id's)
+        {
+            $match: {tour: tourId}
+        },
+        //Second stage => group (calculate statistics)
+        {
+            $group: {
+                _id: '$tour',
+                nRating: { $sum: 1 },
+                avgRating: { $avg: '$rating' }
+            }
+        }
+    ]);
+    console.log(stats);
+
+    await Tour.findByIdAndUpdate(tourId, { 
+        ratingsQuantity: stats[0].nRating,
+        ratingsAverage: stats[0].avgRating
+    })
+};
+
+reviewSchema.post('save', function(){
+    //this points to the current document that is being saved => review
+    this.constructor.calcAverageRatings(this.tour);
+});
 
 const Review = mongoose.model('Review', reviewSchema);
 
 module.exports = Review;
+
+

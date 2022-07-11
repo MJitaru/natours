@@ -81,6 +81,10 @@ app.get('/', (req,res) => {
     });
 });
 
+app.get('/overview', (req,res)=>{
+    res.status(200).render('overview');
+})
+
 
 app.use('/api/v1/tours', tourRouter);       //This router is a middleware that we mount upon the path ('/api/v1/tours')
 app.use('/api/v1/users', userRouter);       //This router is a middleware that we mount upon the path ('/api/v1/users')

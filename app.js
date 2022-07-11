@@ -1,3 +1,4 @@
+const path = require('path') //core module used to manipulate path names.
 const express = require('express');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
@@ -16,7 +17,14 @@ const reviewRouter = require('./routes/reviewRoutes');
 
 const app = express();
 
+//Below two lines settles up the pug engine.
+app.set('view engine', 'pug');
+app.set('views', path.join(__dirname, 'views'))
+
 // 1) GLOBAL MIDDLEWARES
+
+//Serving static files
+app.use(express.static(path.join(__dirname, 'public')));
 
 //Set Security HTTP headers
 app.use(helmet());
@@ -56,8 +64,7 @@ app.use(hpp({
     ]
 }));
 
-//Serving static files
-app.use(express.static(`${__dirname}/public`));
+
 
 //Test middleware
 app.use((req,res,next)=>{
@@ -66,7 +73,15 @@ app.use((req,res,next)=>{
     next();
 })
 
-// 4) ROUTES  
+// 4) ROUTES app.use (URL, ROUTER)
+app.get('/', (req,res) => {
+    res.status(200).render('base', {
+        tour: 'The Forest Hiker',
+        user: 'Jonas'
+    });
+});
+
+
 app.use('/api/v1/tours', tourRouter);       //This router is a middleware that we mount upon the path ('/api/v1/tours')
 app.use('/api/v1/users', userRouter);       //This router is a middleware that we mount upon the path ('/api/v1/users')
 app.use('/api/v1/reviews', reviewRouter);   //This router is a middleware that we mount upon the path ('/api/v1/reviews')

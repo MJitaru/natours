@@ -71,14 +71,16 @@ exports.login = catchAsync(async (req,res,next)=>{
     createSendToken(user, 200, res);
 });
 
+
+//The below middleware is applicable for non-authenticated users
 exports.protect = catchAsync(async(req,res,next)=>{
     // 1) Getting token and check if exist
     let token;
     if(req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
         token = req.headers.authorization.split(' ')[1];
-    } /*else if (req.cookies.jwt && req.cookies.jwt !== 'loggedout') {
+    } else if (req.cookies.jwt) {
         token = req.cookies.jwt;
-    }*/
+    }
 
     if(!token) {
         return next(
@@ -108,6 +110,35 @@ exports.protect = catchAsync(async(req,res,next)=>{
     req.user = currentUser;
     next();
 });
+
+//Only for rendered pages and there will be no errors!
+exports.isLoggedIn = catchAsync(async(req,res,next)=>{
+    // 1) Getting token and check if exist
+    if(req.cookies.jwt) {
+   
+    // 2) Verification token (JWT)
+    const decoded = await promisify (jwt.verify)(req.cookies.jwt, process.env.JWT_SECRET);
+
+    // 3) Check if user still exists
+    const currentUser = await User.findById(decoded.id); // Not a new user, but just the user based on the decoded id.
+    if(!currentUser) {
+        return next();
+    }
+
+    // 4) Check if user changed password after the token (JWT) was issued
+    //iat = issued at.
+    if (currentUser.changedPasswordAfter(decoded.iat)) {
+        return next();
+    }
+    
+    //THERE IS A LOGGED IN USER
+    res.locals.user = currentUser;
+    next();
+    };
+next();
+});
+
+
 
 // eslint-disable-next-line arrow-body-style
 exports.restrictTo = (...roles) =>{

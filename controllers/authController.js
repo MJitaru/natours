@@ -71,6 +71,14 @@ exports.login = catchAsync(async (req,res,next)=>{
     createSendToken(user, 200, res);
 });
 
+exports.logout = (req,res)=>{
+    res.cookie('jwt', 'logged out', {
+        expires: new Date(Date.now() + 10*1000),
+        httpOnly: true
+    });
+    res.status(200).json({ status: 'success'})
+}
+
 
 //The below middleware is applicable for non-authenticated users
 exports.protect = catchAsync(async(req,res,next)=>{
@@ -113,19 +121,18 @@ exports.protect = catchAsync(async(req,res,next)=>{
 
 //Only for rendered pages and there will be no errors!
 exports.isLoggedIn = catchAsync(async(req,res,next)=>{
-    // 1) Getting token and check if exist
     if(req.cookies.jwt) {
    
-    // 2) Verification token (JWT)
+    // 1) Verification token (JWT)
     const decoded = await promisify (jwt.verify)(req.cookies.jwt, process.env.JWT_SECRET);
 
-    // 3) Check if user still exists
+    // 2) Check if user still exists
     const currentUser = await User.findById(decoded.id); // Not a new user, but just the user based on the decoded id.
     if(!currentUser) {
         return next();
     }
 
-    // 4) Check if user changed password after the token (JWT) was issued
+    // 3) Check if user changed password after the token (JWT) was issued
     //iat = issued at.
     if (currentUser.changedPasswordAfter(decoded.iat)) {
         return next();
@@ -133,11 +140,10 @@ exports.isLoggedIn = catchAsync(async(req,res,next)=>{
     
     //THERE IS A LOGGED IN USER
     res.locals.user = currentUser;
-    next();
+     return next();
     };
 next();
 });
-
 
 
 // eslint-disable-next-line arrow-body-style

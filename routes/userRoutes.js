@@ -7,7 +7,8 @@ const router = express.Router(); // It is a real middleware which must be used f
 
 //ROUTES
     router.post('/signup', authController.signup);
-    router.post('/login', authController.login)
+    router.post('/login', authController.login);
+    router.get('/login', authController.logout);
     router.post('/forgotPassword', authController.forgotPassword); //will only receive the email adress
     router.patch('/resetPassword/:token', authController.resetPassword); // will receive the token as well as the new password
 
